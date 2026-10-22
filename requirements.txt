@@ -1,0 +1,32 @@
+# data engineering
+pandas
+numpy
+polars
+pyarrow
+skimpy
+
+# Statistics
+scipy
+statsmodels
+
+# Machine Learning
+scikit-learn
+xgboost
+lightgbm
+
+# Visualization
+matplotlib
+seaborn
+plotly
+
+# optimization de hiperparametros
+optuna
+
+# Interpretability
+shap
+
+# Calidad de codigo
+ruff
+
+# Testing
+pytest
