@@ -1,0 +1,32 @@
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# PyCharm
+.idea/
+
+# macOS
+.DS_Store
+
+# Credenciales
+.env
+.env.*
+*.key
+
+# Datos procesados
+data/processed/
+
+# Archivos temporales
+*.log
+*.tmp
+
+# MLflow
+mlruns/
+mlartifacts/
