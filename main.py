@@ -121,5 +121,17 @@ def main():
     grouped_importance(modelo_xgb, X_test, y_test, "XGBoost")
 
     grouped_importance(modelo_mlp, X_test, y_test, "MLP")
+
+    from modules.mlflow_tracking import registrar_modelo
+
+    registrar_modelo(
+        "Decision Tree",
+        modelo_tree.get_params(),
+        {
+            "MAE": mae_tree,
+            "RMSE": rmse_tree,
+            "R2": r2_tree
+        }
+    )
 if __name__ == "__main__":
     main()
