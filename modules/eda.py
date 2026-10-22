@@ -77,6 +77,15 @@ def run_eda(df: pl.DataFrame):
     logger.info(f"DataFrame binario de valores nulos:\n{df_binario}")
 
     # Pruba run
+    """
+    RUNS TEST - Analisis de valores faltantes
+    
+    Objetivo: Evaluar si la secuencia temporal de los valores faltantes presenta un comportamiento aleatorio o se agrupa
+    
+    H0: Los valores faltantes se distribuyen de manera aleatoria
+    H1: Los valores faltantes presentan un patrón no aleatorio
+    
+    """
     df_run = (
         df.unpivot(
             index=["date", "store_id", "category"],
@@ -115,8 +124,11 @@ def run_eda(df: pl.DataFrame):
 
     logger.info(f"Resultados de la prueba de aleatoriedad:\n{df_test}")
 
-    # Corrección de p-valores por múltiples comparacione
-
+    # Corrección de p-valores por múltiples comparaciones
+    """
+    Correcion de Benjamini - Hochberg para controlar los falsos descubrimientos
+    
+    """
     df_test = df_test.with_columns(
         pl.Series(
             name="p_adjusted",
@@ -153,7 +165,5 @@ def run_eda(df: pl.DataFrame):
         f"Significativas ajustadas:"
         f"{df_significativos.height}"
     )
-
-
 
     logger.info("Análisis exploratorio de datos (EDA) finalizado")

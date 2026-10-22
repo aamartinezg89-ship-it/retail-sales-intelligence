@@ -59,7 +59,7 @@ def main():
     modelo_ols = train_ols(df_train)
 
 
-    from modules.evaluation import evaluate_ols, evaluate_model, feature_importance, diagnostic_model, grouped_importance
+    from modules.evaluation import evaluate_ols, evaluate_model, feature_importance, diagnostic_model, grouped_importance, export_tree
 
     df_test = df_panel.filter(
         pl.col("date") >= date(2024, 1, 1)
@@ -74,6 +74,8 @@ def main():
     modelo_tree = train_decision_tree(
         X_train, y_train, fechas_train
     )
+
+    export_tree(modelo_tree, X_train)
 
     mae_tree, rmse_tree, r2_tree = evaluate_model(
         modelo_tree, X_test, y_test, "Decision Tree"

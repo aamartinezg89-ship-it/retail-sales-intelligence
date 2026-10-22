@@ -6,9 +6,14 @@ import statsmodels.formula.api as smf
 from datetime import date
 from sklearn.tree import DecisionTreeRegressor
 from xgboost import XGBRegressor
+from sklearn.neural_network import MLPRegressor
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+import statsmodels.formula.api as smf
 
 logger = logging.getLogger(__name__)
 
+# 1) Capa de preparacion para ML
 def prepare_features(df: pl.DataFrame):
 
     excluir = [
@@ -30,6 +35,7 @@ def prepare_features(df: pl.DataFrame):
 
     return X, y
 
+# 2) Division para el entrenamiento y prueba
 def split_data(df, X, y):
 
     train = df["date"] < date(2024, 1, 1)
@@ -42,6 +48,7 @@ def split_data(df, X, y):
 
     return X_train, X_test, y_train, y_test
 
+# 3) Modelo MCO
 def train_ols(df):
 
     formula = """
@@ -87,6 +94,20 @@ def train_ols(df):
 
     return modelo
 
+#4) Arbol de decision
+"""
+Objetivo: Identificar patrones no lineales y segmentaciones comerciales asociadas con las diferencias en ventas 
+
+Algoritmo: CART (Classificacion and Regression Trees) aplicado a la regresion
+
+    1. Selecciona la variable y el umbral que minimiza el error cuadratico ponderaro de los nodos resultantes
+    2. Divide las observaciones recursivas
+    3. Construye reglas de decision entre grupos comerciales
+    4. Predice las ventas mediante el prodemio de cada hoja
+
+Optimizacion: GridSearchCV con validacion temporal por fechas completas
+
+"""
 def train_decision_tree(X_train, y_train, fechas_train):
 
     fechas = fechas_train.to_numpy()
@@ -118,6 +139,15 @@ def train_decision_tree(X_train, y_train, fechas_train):
 
     return grid.best_estimator_
 
+# 5) XGboost
+"""
+Objetivo: Identificar relaciones no lineales asociadas con las ventas
+
+Metodo: 
+    1. Gradiente Boosting: construye árboles secuenciales que corrigen los errores de predicción anteriores
+    
+Optimizacion: GridSearchCV con validacion temporal
+"""
 
 def train_xgboost(X_train, y_train, fechas_train):
 
@@ -158,11 +188,14 @@ def train_xgboost(X_train, y_train, fechas_train):
 
     return grid.best_estimator_
 
+# 6) Red neuronal - Regresion MLP
+"""
+Objetivo: Modelar patrones complejos y no lineales de ventas
 
-from sklearn.neural_network import MLPRegressor
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import make_pipeline
+Metodo: Red Neuroal con dos capas ocultas (64 y 32 neuronas) activada por ReUL y optimizacion mediante retropropagacion
 
+Procesamiento: Estandarizacion de variables con StandardScaler
+"""
 
 def train_neural_network(X_train, y_train):
 
@@ -185,11 +218,12 @@ def train_neural_network(X_train, y_train):
 
     return modelo
 
+#8) Modelo Jerarquico - Efecto mixtos
+"""
+Objetivo: Cuantificar las diferencias persistentes de ventas entre tiendas
 
-import statsmodels.formula.api as smf
-
-
-
+Metodo: Modelo de efectos mixtos con intercepto aleatorio por tienda y efectos fijos en el formato, categoria y temporalidad
+"""
 def train_hierarchical(df_train):
 
     datos = df_train.to_pandas()
