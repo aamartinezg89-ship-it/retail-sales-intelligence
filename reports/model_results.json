@@ -9,6 +9,148 @@
       "MAE": 89849.11330052959,
       "RMSE": 184263.54674851583,
       "R2": 0.10455241842191954
+    },
+    "coeficientes": {
+      "Intercept": {
+        "beta": 11.951177191358276,
+        "p_value": 3.8246288128721914e-77
+      },
+      "C(store_format, Treatment(reference=\"Bodega\"))[T.Express]": {
+        "beta": -0.6820801481842795,
+        "p_value": 9.37491110154497e-10
+      },
+      "C(store_format, Treatment(reference=\"Bodega\"))[T.Supercenter]": {
+        "beta": 0.5321283658357685,
+        "p_value": 1.5110262214307522e-05
+      },
+      "C(category, Treatment(reference=\"Abarrotes\"))[T.Bebidas]": {
+        "beta": -0.6678928660109806,
+        "p_value": 0.0
+      },
+      "C(category, Treatment(reference=\"Abarrotes\"))[T.Cuidado_Personal]": {
+        "beta": -0.8665627650200536,
+        "p_value": 0.0
+      },
+      "C(category, Treatment(reference=\"Abarrotes\"))[T.Electronica]": {
+        "beta": -0.3275220170686115,
+        "p_value": 0.0
+      },
+      "C(category, Treatment(reference=\"Abarrotes\"))[T.Hogar]": {
+        "beta": -0.3971603219733086,
+        "p_value": 0.0
+      },
+      "C(category, Treatment(reference=\"Abarrotes\"))[T.Ropa]": {
+        "beta": -0.41709392060389416,
+        "p_value": 0.0
+      },
+      "C(region)[T.Norte]": {
+        "beta": 0.03452405225964715,
+        "p_value": 0.6743984363129498
+      },
+      "C(region)[T.Occidente]": {
+        "beta": 0.025939106815944673,
+        "p_value": 0.7456289223266199
+      },
+      "C(region)[T.Oriente]": {
+        "beta": -0.1443973346158266,
+        "p_value": 0.06341279407103823
+      },
+      "C(region)[T.Sur]": {
+        "beta": -0.1775624267228841,
+        "p_value": 0.022174810767866836
+      },
+      "C(socioeconomic_level)[T.B]": {
+        "beta": -0.10273495121093285,
+        "p_value": 0.1331446426017922
+      },
+      "C(socioeconomic_level)[T.C]": {
+        "beta": -0.46320165199127605,
+        "p_value": 3.145226238076066e-11
+      },
+      "C(socioeconomic_level)[T.C+]": {
+        "beta": -0.3274009720989166,
+        "p_value": 1.3329322305606261e-06
+      },
+      "has_pharmacy[T.True]": {
+        "beta": -0.16681453855923145,
+        "p_value": 0.028135902958321263
+      },
+      "has_fuel_station[T.True]": {
+        "beta": -0.0198173651316728,
+        "p_value": 0.6658545991384051
+      },
+      "C(season)[T.Otoño]": {
+        "beta": 0.30146016800958797,
+        "p_value": 0.0
+      },
+      "C(season)[T.Primavera]": {
+        "beta": 0.12629169161200762,
+        "p_value": 0.0
+      },
+      "C(season)[T.Verano]": {
+        "beta": 0.25764614324923674,
+        "p_value": 0.0
+      },
+      "is_holiday[T.True]": {
+        "beta": -0.39832731958624734,
+        "p_value": 0.0
+      },
+      "is_buen_fin[T.True]": {
+        "beta": 1.5891779845064824,
+        "p_value": 0.0
+      },
+      "C(store_format, Treatment(reference=\"Bodega\"))[T.Express]:C(category, Treatment(reference=\"Abarrotes\"))[T.Bebidas]": {
+        "beta": -0.0002653077761466424,
+        "p_value": 0.9426875092525252
+      },
+      "C(store_format, Treatment(reference=\"Bodega\"))[T.Supercenter]:C(category, Treatment(reference=\"Abarrotes\"))[T.Bebidas]": {
+        "beta": -0.0038757797314669063,
+        "p_value": 0.33025259971630616
+      },
+      "C(store_format, Treatment(reference=\"Bodega\"))[T.Express]:C(category, Treatment(reference=\"Abarrotes\"))[T.Cuidado_Personal]": {
+        "beta": 0.005212269601570724,
+        "p_value": 0.11162781386499385
+      },
+      "C(store_format, Treatment(reference=\"Bodega\"))[T.Supercenter]:C(category, Treatment(reference=\"Abarrotes\"))[T.Cuidado_Personal]": {
+        "beta": -0.0056637500559819426,
+        "p_value": 0.10503258488861944
+      },
+      "C(store_format, Treatment(reference=\"Bodega\"))[T.Express]:C(category, Treatment(reference=\"Abarrotes\"))[T.Electronica]": {
+        "beta": 0.0010487844505483906,
+        "p_value": 0.8003974991768884
+      },
+      "C(store_format, Treatment(reference=\"Bodega\"))[T.Supercenter]:C(category, Treatment(reference=\"Abarrotes\"))[T.Electronica]": {
+        "beta": -0.004190476537393408,
+        "p_value": 0.3835485080113362
+      },
+      "C(store_format, Treatment(reference=\"Bodega\"))[T.Express]:C(category, Treatment(reference=\"Abarrotes\"))[T.Hogar]": {
+        "beta": 0.002951072377750807,
+        "p_value": 0.4338732943625333
+      },
+      "C(store_format, Treatment(reference=\"Bodega\"))[T.Supercenter]:C(category, Treatment(reference=\"Abarrotes\"))[T.Hogar]": {
+        "beta": -0.007311871401464523,
+        "p_value": 0.03604980226558356
+      },
+      "C(store_format, Treatment(reference=\"Bodega\"))[T.Express]:C(category, Treatment(reference=\"Abarrotes\"))[T.Ropa]": {
+        "beta": -0.0018174601708385732,
+        "p_value": 0.5943382874592859
+      },
+      "C(store_format, Treatment(reference=\"Bodega\"))[T.Supercenter]:C(category, Treatment(reference=\"Abarrotes\"))[T.Ropa]": {
+        "beta": -0.006677211505689374,
+        "p_value": 0.10810524915833382
+      },
+      "np.log(size_sqm)": {
+        "beta": 0.04483094195593473,
+        "p_value": 0.52098500925149
+      },
+      "np.log(num_checkouts)": {
+        "beta": 0.05435013545535688,
+        "p_value": 0.5524131033350457
+      },
+      "has_promotion": {
+        "beta": -0.0026467243438742308,
+        "p_value": 0.24540563398148907
+      }
     }
   },
   "modelos_ml": {
@@ -47,6 +189,70 @@
         "RMSE": 179638.5704680176,
         "R2": 0.14893937898755572
       }
+    }
+  },
+  "importancias": {
+    "Decision Tree": {
+      "size_sqm": 0.4515121543717196,
+      "is_buen_fin": 0.24406626451919258,
+      "category_Abarrotes": 0.1315333161906327,
+      "num_checkouts": 0.04871383921078852,
+      "socioeconomic_level_C": 0.036053526657634456,
+      "category_Cuidado_Personal": 0.035302864094787084,
+      "category_Bebidas": 0.02043091620158041,
+      "socioeconomic_level_B": 0.009349143942811465,
+      "socioeconomic_level_C+": 0.009078929869252883,
+      "season_Invierno": 0.006302440341943904,
+      "region_Norte": 0.0037092110018515146,
+      "region_Occidente": 0.0021586882997782064,
+      "store_format_Express": 0.0010878235389082205,
+      "season_Primavera": 0.0006875763623038096,
+      "season_Otoño": 1.3305396814735088e-05,
+      "category_Electronica": 0.0,
+      "category_Hogar": 0.0,
+      "category_Ropa": 0.0,
+      "has_promotion": 0.0,
+      "store_format_Bodega": 0.0,
+      "store_format_Supercenter": 0.0,
+      "region_Centro": 0.0,
+      "region_Oriente": 0.0,
+      "region_Sur": 0.0,
+      "socioeconomic_level_A/B": 0.0,
+      "has_pharmacy": 0.0,
+      "has_fuel_station": 0.0,
+      "season_Verano": 0.0,
+      "is_holiday": 0.0
+    },
+    "XGBoost": {
+      "store_format_Supercenter": 0.5823111534118652,
+      "category_Abarrotes": 0.059590090066194534,
+      "is_buen_fin": 0.049940988421440125,
+      "store_format_Bodega": 0.04885903745889664,
+      "socioeconomic_level_C": 0.03770548477768898,
+      "num_checkouts": 0.0374261811375618,
+      "store_format_Express": 0.023143550381064415,
+      "size_sqm": 0.019642330706119537,
+      "socioeconomic_level_A/B": 0.014656711369752884,
+      "category_Cuidado_Personal": 0.01462608017027378,
+      "socioeconomic_level_B": 0.012901048175990582,
+      "category_Bebidas": 0.0121235903352499,
+      "is_holiday": 0.011138425208628178,
+      "region_Occidente": 0.011079082265496254,
+      "season_Otoño": 0.009655864909291267,
+      "has_fuel_station": 0.007907307706773281,
+      "category_Electronica": 0.006970659364014864,
+      "season_Verano": 0.006631562020629644,
+      "region_Norte": 0.006240113638341427,
+      "season_Invierno": 0.005400136113166809,
+      "has_pharmacy": 0.004537546541541815,
+      "socioeconomic_level_C+": 0.003589244559407234,
+      "region_Centro": 0.003491389798000455,
+      "region_Oriente": 0.002570129930973053,
+      "category_Ropa": 0.0023163859732449055,
+      "category_Hogar": 0.0022435877472162247,
+      "region_Sur": 0.0014876608038321137,
+      "season_Primavera": 0.0012521783355623484,
+      "has_promotion": 0.00056245899759233
     }
   }
 }

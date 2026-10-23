@@ -36,9 +36,9 @@
             "p_adjusted": 0.01180910470051749
         },
         {
-            "store_id": "STR_048",
-            "category": "Electronica",
-            "variable": "avg_ticket",
+            "store_id": "STR_016",
+            "category": "Bebidas",
+            "variable": "units_sold",
             "z_stat": -3.8204090038856777,
             "p_value": 0.00013323055363512564,
             "p_adjusted": 0.043966082699591465
@@ -52,9 +52,9 @@
             "p_adjusted": 0.043966082699591465
         },
         {
-            "store_id": "STR_016",
-            "category": "Bebidas",
-            "variable": "units_sold",
+            "store_id": "STR_048",
+            "category": "Electronica",
+            "variable": "avg_ticket",
             "z_stat": -3.8204090038856777,
             "p_value": 0.00013323055363512564,
             "p_adjusted": 0.043966082699591465

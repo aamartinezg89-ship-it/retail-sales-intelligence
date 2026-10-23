@@ -190,4 +190,13 @@ def export_tree(modelo, X, ruta="reports/decision_tree.png"):
     plt.savefig(ruta, dpi=200, bbox_inches="tight")
     plt.close()
 
-    logger.info("Arbol exportado: {ruta}")
+
+def export_mlp(modelo, ruta="reports/neural_networks.png"):
+    red = modelo.named_steps["mlpregressor"]
+
+    plt.plot(red.loss_curve_)
+    plt.tittle("MLP-Curva de perdida")
+    plt.xlabel("Iteracciones")
+    plt.ylabel("Loss")
+    plt.savefig(ruta, dpi=200, bbox_inches="tight")
+    plt.close()

@@ -15,7 +15,7 @@ from modules.modeling import (
     train_ols, prepare_features, split_data, train_decision_tree, train_xgboost, train_neural_network, train_hierarchical)
 
 from modules.evaluation import (
-    metricas, evaluate_ols, evaluate_model, feature_importance, diagnostic_model, grouped_importance, export_tree)
+    metricas, evaluate_ols, evaluate_model, feature_importance, diagnostic_model, grouped_importance, export_tree, export_mlp)
 
 from modules.mlflow_tracking import registrar_modelo
 
@@ -80,8 +80,28 @@ def main():
         evaluaciones[nombre] = {"train": train, "test": test}
 
     guardar_json("model_results", {
-        "OLS": {"train": ols_train, "test": ols_test},
-        "modelos_ml": evaluaciones
+        "OLS": {
+            "train": ols_train,
+            "test": ols_test,
+            "coeficientes": {
+                v: {
+                    "beta": float(modelo_ols.params[v]),
+                    "p_value": float(modelo_ols.pvalues[v])
+                }
+                for v in modelo_ols.params.index
+            }
+        },
+        "modelos_ml": evaluaciones,
+        "importancias": {
+            nombre: {
+                variable: float(valor)
+                for variable, valor in feature_importance(modelo, X_train, nombre)
+            }
+            for nombre, modelo in {
+                "Decision Tree": modelo_tree,
+                "XGBoost": modelo_xgb
+            }.items()
+        }
     })
 
     # 7) diagnostico comercial
