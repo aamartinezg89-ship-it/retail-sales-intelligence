@@ -147,11 +147,12 @@ el criterio de convergencia, lo que constituye una limitación del resultado pre
 Este proyecto incorpora herramientas de AI como asistente del desarrollo, soporte de la metodología estadistica, y
 en la automatizacion de la documentacion.
 
-| Tecnologia                | Aplicacion                                                                                                   |
-|---------------------------|--------------------------------------------------------------------------------------------------------------|
-| GitHub Copilot            | Autocompletar el codigo y sugerir la linea siguiente durante el desarrollo en Python                         |
-| ChatGPT                   | Asistencia tecnica para investigar y aplicar pruebas cuando se tienen valores faltantes en paneles de tiempo |
-| Ollama + Llamma 3.2 (3B)  | Integracion LLM a nivel local para automatizar la generacion de Data Card del los resultado de EDA           |
+| Tecnologia               | Aplicacion                                                                                                                                                           |
+|--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| GitHub Copilot           | Autocompletar el codigo y sugerir la linea siguiente durante el desarrollo en Python                                                                                 |
+| ChatGPT (1)              | Asistencia tecnica para investigar y aplicar pruebas cuando se tienen valores faltantes en paneles de tiempo                                                         |
+| ChatGPT (2)              | Asistencia en la estructuración, redacción y presentación de resúmenes de resultados, README y PROCCESS, utilizando como referencia las salidas generadas por Python |
+| Ollama + Llamma 3.2 (3B) | Integracion LLM a nivel local para automatizar la generacion de Data Card del los resultado de EDA                                                                   |
 
 ### FLujo de trabajo LLM local
 
@@ -163,6 +164,7 @@ formatos predefinidos e instrucciones numericas.
 
 * Pruebas estadisticas y los modelos de machine learning son ejecutados en Python
 * Asistencia IA en la codificacion y las sugerencias metologicas son revisadas antes de la integracion
+* La IA se utilizó como herramienta de asistencia para el desarrollo y la documentación
 * La documentacion generado por LLM son revisados comparando el origen de los resultado estadisticos
 * La seleccion de los modelos, interpretacion estadistica, y conclusiones finales se mantienen bajo la responsabilidad del humano
 
@@ -204,5 +206,3 @@ mlflow ui --host 127.0.0.1 --port 5001
 Los resultados se almacenan en la carpeta `reports/`, incluyendo métricas, diagnósticos estadísticos y documentación.
 
 > Nota: verificar que `requirements.txt` exista en el repositorio.
-
-**[Ver proyecto en GitHub](https://github.com/aamartinezg89-ship-it/retail-sales-intelligence)**
