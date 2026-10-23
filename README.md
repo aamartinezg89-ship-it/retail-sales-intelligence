@@ -4,149 +4,204 @@
 
 ## 1) Descripcion general del proyecto
 
-El proyecto desarrolla un marco analitico de e2e para determinar si las variaciones
-que existen enntre diferentes tiendas pueden ser explicados por factores asociados, como
-categorias de producto, regiones geograficas y condiciones comerciales.
+El proyecto desarrolla un marco analitico End-to-End para investigar las diferencias en las ventas entre formatos
+comerciales y determinar en que grado se pueden asociarse con caracteristicas, estructurales, operativas, socioeconomicas y
+temporales.
 
-La solución integra un analisis exploratorio de datos, modelacion estadistica,
-machine learning, modelos jerarquicos, validacion temporal y la interpretacion modelistica.
+Se integran tres fuentes de información: transacciones, caracteristicas de tienda y calendario de eventos. Esta combinacion
+permite construir un panel de ventas a nivel tienda-categoria-dia.
 
-**Objetivo central**: Explicar las diferencias en ventas mediante la identificacion
-de factores asociados comerciales y estructurales.
+El enfoque metodologico combina econometria tradicional, algoritmos de Machine Learning, modelos de efectos mixtos y validacion temporal.
+
+**Objetivo central**: Identificar los factores asociados con la variabilidad de las ventas, evaluar posibles relaciones
+no lineales y cuantificar la heterogneidad entre tiendas que se puede explciar con las variables observadas.
 
 ## 2) Problema de negocio
 
-Las ventas al por menor varian segun el formato de la tienda, categoria de productos, regiones,
-estrucutra socieconomica y calendario de eventos.
+Las diferencia en las ventas pueden responde a diversas condiciones:
 
-La dirección del proyecto sigue las siguientes pregunas:
+* Formato de tienda y categoria
+* Tamaño de tiendas y numero de cajas registradoras
+* Promociones y eventos comerciales
+* Farmacias y gasolineras
+* Regiones y nviel socioeconomico
+
+La investigacion parte de dos preguntas:
 
 * ¿Qué factores están estadisticamente asociados con las diferencias en las ventas?
-* ¿Cuanta variación se mantiene entre las tiendas, despues de considerar las caracteristicas comerciales observdas?
-* ¿Que variables contribuyen en mayor medida al rendimiento productivo?
+* ¿Existen relaciones no lineales que los modelo lineales pueden estar dejando afuera?
 
-El objtivo es el análisis explicativo con respealdo de la validación predictiva, en lugar de tener solo el pronostico.
 
 ## 3) Estructura analitica y conjunto de datos
 
 El conjunto de datos esta organizado como un panel de ventas al día
 
-| Componentes              | Descripcion               |
-|--------------------------|---------------------------|
-| Observaciones            | 203, 958                  |
-| Tiendas                  | 80                        |
-| Categorias deproducto    | 6                         |  
-| Perido                   | Enero 2023 - Febrero 2024 |
-| Nivel observacional      | Tienda - Categoria - Día  |
-| Variable objetivo        | amount_total              |
-| Periodo de entrenamiento | 2023                      |
-| Periodo de prueba        | Enero-Febrero 2024        |
+| Componentes              | Descripcion                 |
+|--------------------------|-----------------------------|
+| Observaciones            | 203, 958                    |
+| Tiendas                  | 80                          |
+| Categorias deproducto    | 6                           |  
+| Perido                   | Enero 2023 - Febrero 2024   |
+| Nivel observacional      | Tienda - Categoria - Día    |
+| Variable objetivo        | amount_total                |
+| Periodo de entrenamiento | Enero-noviembre 2023        |
+| Periodo de prueba        | Diciembre 2023-Febrero 2024 |
 
-El proyecto integra informacion transaccional, caracteristicas de tiendas y eventos calendarizados
+La disponibilidad de 14 meses de informacion limita el estudio de patrones temporales estacionales de largo plazo. En ese sentido,
+se prioriza modelo explicativos.
 
-## 4) Ingenieria de datos y procesamiento previo
+## 4) Calidad de Datos y EDA
 
-El pipeline incluye:
+En el analisis inicial se identificaton 36, 198 valores faltantes, sin registros duplicados.
 
-* Ingesta de datos y validación de esquema
-* Análisis exploratorio de valores faltantes y calidad de datos
-* Imputación de valores faltantes usando medianas mensuales por tienda y categoria
-* Integración de transacciones, información de tiendas y datos de calendario
-* Codificación "one-hot" de variables categoricas para el Machine Learning
-* Separacion temporal del conjunto de datos para el entrenamiento y pruebas
+### Variables con valores faltantes
 
-**Las variables categoricas en su primera versión son preservadas en el panel analitico
-para la interpretación economica**
+| Variables         | Porcentaje faltante |
+|-------------------|---------------------|
+| cash_transactions | 5.94                |
+| amount_cash       | 5.94                |
+| units_sold        | 3.00                |
+| avg_ticket        | 2.39                |
+| replenishment     | 0.47                | 
 
-## 5) Modelacion econometrica
+### Deteccion de agrupamientos temporales de los valores faltantes
 
-### Minimos cuadrados ordinarios
+Se aplica una prueba de rachas (Runs test) para determinar si las secuencias de observaciones faltantes y no faltantes
+presentan un comportamiento compatible con sentido aleatorio. La hipotesis nula dice que la secuencia se ordena aleatoriamente.
 
-Se estima una regresion log-lineal para cuantificar asociaciones entre las ventas y las caracteristicas comericales
+| Indicador                                   | Resultado |
+|---------------------------------------------|-----------|
+| Contrastes realizados                       | 1650      |
+| Contrastes significativos                   | 5         |
+| Proporcion significativa                    | 0.30 %    |
+| Registros duplicados                        | 0         |
+| Valores Faltantes despues de la imputacion  | 0         | 
 
-La especificacion econometrica considera:
+Se identifican cinco secuencias con evidencia estadistica de comportamiento no aleatorio. Despues se aplica
+una imputacion por medianas mensuales por tienda y categoria.
 
-* Formato de tiendas y categorias
-* Interacciones entre formato de tiendas y categoria
-* Region geografica y nivel socioeconomico
-* Caracteristicas de las tiendas
-* Promociones y calendario de eventos
-* Indicadores estacionales
+## 5) Seleccion de modelos
 
-**Grupos de Referencia**: Bodega para el formato de tienda y Abarrotes para la categoria. El fundamento es que son los
-que mayor contribuyen a la venta en 43.60% y 25.15%, respectivamente.
+| Modelo                             | Fundamento de selección                                           | 
+|------------------------------------|-------------------------------------------------------------------|
+| Mínimos Cuadrados Ordinarios (MCO) | Interpretabilidad económica y contraste estadístico               |
+| Decision Tree                      | Identificación de reglas e interacciones no lineales              | 
+| XGBoost                            | Modelación de relaciones no lineales mediante árboles potenciados |
+| Red neuronal MLP                   | Aproximación flexible de relaciones multivariadas                 | 
+| Modelo jerárquico                  | Descomposición de variabilidad entre tiendas y dentro de ellas    | 
 
-Se usan errores estandar clusterizados a nivel tienda para considerar la dependecia dentro de cada tienda.
+## 6) Resultados econometricos y estadisticos
 
-### Modelos Jerarquicos 
+### MCO
+| Indicador                                               | Resultado                      |
+|---------------------------------------------------------|--------------------------------|
+| Observaciones de entrenamiento                          | 160,296                        |
+| R² ajustado en escala logarítmica                       | 0.7268                         |
+| Coeficientes estadísticamente significativos reportados | 17                             |
+| Covarianza                                              | Robustez por clúster de tienda |
 
-Se emplea un modelo de efecto fijos con interceptos aleatorios por tienda.
+### Modelo Jerarquico
+| Indicador              | Resultado  |
+|------------------------|------------|
+| Varianza entre tiendas | 0.0610     |
+| Varianza residual      | 0.1237     |
+| ICC                    | **33.00%** |
+| Convergencia           | Exitosa    |
 
-El objetivo es cuantificar la heterogenidad residual entre tiendas al considerar el panel de variables explicativas
-seleccionadas.
+El ICC(coeficiente de correlación intraclase) de 33% indica que hay heterogeneidad estructural perisisnte
+que no se integra por las variables incluidas.
 
-Se calcula el coeficiente de correlacion entre clases (ICC) que ronda en 27.25%. Lo que implica que
-la varianza condicional modelada para el logartimo de las ventas se atribuye a diferencias persistentes
-entre tiendas, despues de controlar por formato de tienda, categoria y temporada.
+## 7) Evuacion fuera de la muestra
 
-En otras palabras, aunque las tiendas tengas caracteristicas similares, pueden tener ventas diferentes relacionadas con 
-caracteristicas propias de cada tienda, que el modelo no logra explicar. Es decir, 27.25% es la variacion que queda por
-explicar se debe a diferencias entre tiendas.
+### Entrenamiento y prueba
+| Modelo            | MAE Train     | MAE Test      | RMSE Test      | R² Test    |
+|-------------------|---------------|---------------|----------------|------------|
+| MCO               | 46,630.07     | 89,849.11     | 184,263.55     | 0.1046     |
+| **Decision Tree** | **48,289.71** | **81,232.06** | **164,859.48** | **0.2832** |
+| XGBoost           | 41,960.85     | 84,207.45     | 180,066.01     | 0.1449     |
+| MLP               | 42,901.51     | 84,264.44     | 179,638.57     | 0.1489     |
 
-**Nota**: El modelo reporta covergencia exitosa.
+### Parametros principales
+| Modelo        | Configuración reportada                                 |
+|---------------|---------------------------------------------------------|
+| Decision Tree | Profundidad 8; mínimo 100 observaciones por hoja        |
+| XGBoost       | 200 estimadores; profundidad 5; learning rate 0.10      |
+| MLP           | Arquitectura de capas ocultas (64, 32); 300 iteraciones |
 
-## 6) Modelos de Machine Learning
+El entrenamiento del MLP alcanzó el máximo de iteraciones sin satisfacer 
+el criterio de convergencia, lo que constituye una limitación del resultado presentado.
 
-Se evaluan 3 modelos predictivos adicionales:
+## 8) Diagnostico de sesgo y estabilidad temporal
+- **PBIAS:** sesgo porcentual agregado de las predicciones respecto a las ventas observadas.
+- **Kolmogorov–Smirnov (KS):** diferencia máxima entre las distribuciones empíricas de errores de entrenamiento y prueba.
 
-* Regresor de árbol de decisión con GriedSearchCV
-* Regresor temporal XGBoost con GriedSearchCV
-* Red Neuronal MLP
+| Modelo            | PBIAS Test  | KS de errores |
+|-------------------|-------------|---------------|
+| **Decision Tree** | **+25.12%** | **0.1865**    |
+| XGBoost           | +35.18%     | 0.2730        |
+| MLP               | +34.80%     | 0.2645        |
+| MCO               | +38.99%     | 0.2467        |
 
-Todos los modelos usan el mismo periodo de entrenamiento y prueba.
+## 9) Transparencia en el desarollo e integracion IA
+Este proyecto incorpora herramientas de AI como asistente del desarrollo, soporte de la metodología estadistica, y
+en la automatizacion de la documentacion.
 
-### Rendimiento fuera de la muestra
+| Tecnologia                | Aplicacion                                                                                                   |
+|---------------------------|--------------------------------------------------------------------------------------------------------------|
+| GitHub Copilot            | Autocompletar el codigo y sugerir la linea siguiente durante el desarrollo en Python                         |
+| ChatGPT                   | Asistencia tecnica para investigar y aplicar pruebas cuando se tienen valores faltantes en paneles de tiempo |
+| Ollama + Llamma 3.2 (3B)  | Integracion LLM a nivel local para automatizar la generacion de Data Card del los resultado de EDA           |
 
-| Modelo            | MAE     | RMSE    | R^2     |
-|-------------------|---------|---------|---------|
-| MCO               | 45,400  | 63,661  | 0.6186  |
-| Árbol de decision | 52,470  | 81,253  | 0.3788  |
-| XGboost           | 55,520  | 97,654  | 0.1026  |
-| Red Neuronal MLP  | 56,213  | 95,798  | 0.1364  |
+### FLujo de trabajo LLM local
 
-MCO mejora el poder predictivo entre las especificaciones evaluadas sobre el periodo de prueba. 
+El proyecto integra un modelo de lenguaje que esta instalado localmente mediante Ollama API. EL LLM
+recibe los resultados de EDA en JSON y el agente genera una documentacion en Markdown bajo
+formatos predefinidos e instrucciones numericas.
 
-## 7) Diagnostico del modelo y validacion
+### Validacion humana y responsabilidad de IA
 
-El flujo analitico de trabajo considera:
+* Pruebas estadisticas y los modelos de machine learning son ejecutados en Python
+* Asistencia IA en la codificacion y las sugerencias metologicas son revisadas antes de la integracion
+* La documentacion generado por LLM son revisados comparando el origen de los resultado estadisticos
+* La seleccion de los modelos, interpretacion estadistica, y conclusiones finales se mantienen bajo la responsabilidad del humano
 
-* Validación por retencion temporal
-* Evaluación MAE, RMSE y R^2
-* Analisis de error por formato de tienda y categoria
-* Inferencia de cluster robustos en MCO
-* Descomposición de varianza jerarquica.
+## 10) Hallazgos
 
-## 8) Hallazgos clave
+* Se genera un panel de datos que permite evaluar la diferencia entre ventas con base en condiciones comerciales y estructurales
+* La prueba de rachas indica que los valores faltantes no son continuos
+* La regresion log-lineal da un parametro para investigar asociaciones entre condiciones comerciales y ventas. 
+* Los modelos de ML complementan la econometria al explorar relaciones no lineales, aunque una mayor complejidad no mejoro desempeño fuera de muestra. 
+* Decision Tree obtuvo el mejor desempeño predictivo en el periodo de prueba.
 
-* La especificacion log-lineal por MCO superó a los modelos de ML durante el periodo de prueba.
-* Las dimensiones comerciales, en especial, categoria y el formato, contribuyen al rendimiento predictivo.
-* El modelo jerarquico estimo que el 27.25% de la varianza residual corresponde a la diferencia entre tiendas.
+## 11) Ejecucion del proyecto
+Clonar el repositorio e instalar las dependencias:
 
-## 9) Limitaciones 
+```bash
+git clone https://github.com/aamartinezg89-ship-it/retail-sales-intelligence.git
+cd retail-sales-intelligence
+pip install -r requirements.txt
+```
 
-* Los resultados son especificos al periodo de estudio.
-* El rendimiento predictivo varia según el segmento comercial
-* LOs modelos de intercepto aleatorio se basan en supuestos sobre la heterogeneidad no observada.
-* La importancia de las variables no corresponde a causalidad
+Colocar los tres archivos CSV en la carpeta de datos configurada.
 
-## 10) Conclusión
+Ejecutar el proyecto:
 
-| Analisis          | Resultado principal    | Interpretacion                                                  |
-|-------------------|------------------------|-----------------------------------------------------------------|
-| Modelo jerarquico | ICC = 27.25%           | Existen diferencias entre tiendas que las variables no explican |
-| Categoria         | +18,777 a + 19,882 MAE | Factor relevante para los 3 modelos                             |
-| Formato           | +7005 a 58,577 MAE     | Importancia considerable, especial para la red                  |
-| NSE               | +7653 a +16275 MAE     | Aporta informacion sobre las diferencias en venta               |
-| Region            | +186 a +8801 MAE       | Contribución varia según el modelo                              |
-| Estaciones        | 0 MAE                  | No hay importancia                                              |
-| Mejor Modelo      | MCO, R^2 = 0.6186      | Mejor desempeño                                                 |
+```bash
+python main.py
+```
+
+Visualizar los experimentos en MLflow:
+
+```bash
+mlflow ui
+```
+si da error, probar:
+```bash
+mlflow ui --host 127.0.0.1 --port 5001
+```
+
+Los resultados se almacenan en la carpeta `reports/`, incluyendo métricas, diagnósticos estadísticos y documentación.
+
+> Nota: verificar que `requirements.txt` exista en el repositorio.
+
+**[Ver proyecto en GitHub](https://github.com/aamartinezg89-ship-it/retail-sales-intelligence)**
