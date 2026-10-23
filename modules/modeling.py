@@ -28,17 +28,19 @@ def prepare_features(df: pl.DataFrame):
     X = df.drop(excluir)
     y = df["amount_total"]
 
-    logger.info(f"X: {X.shape}")
-    logger.info(f"Y: {y.shape}")
-    logger.info(f"Variables predictoras: {X.columns}")
-    logger.info(f"Nulos en X: {X.null_count().sum_horizontal()[0]}")
+    logger.info(
+        f"\nDatos\n"
+        f"Observados : {X.height:,}\n"
+        f"Predictores: {X.width}\n"
+        f"Nulos     : {X.null_count().sum_horizontal()[0]}"
+    )
 
     return X, y
 
 # 2) Division para el entrenamiento y prueba
 def split_data(df, X, y):
 
-    train = df["date"] < date(2024, 1, 1)
+    train = df["date"] < date(2023, 12, 1)
 
     X_train = X.filter(train)
     X_test = X.filter(~train)
@@ -78,19 +80,13 @@ def train_ols(df):
 
     significativas = modelo.pvalues[modelo.pvalues < 0.05].drop("Intercept", errors = "ignore")
 
-    logger.info(f"Resultados de regresion econometrica")
-    logger.info(f"R² ajustado: {modelo.rsquared_adj:.4f}")
-    logger.info(f"Observaciones: {int(modelo.nobs):,}")
-    logger.info(f"Covarianza: {modelo.cov_type}")
-
-    logger.info("Variables estadísticamente significativas:")
-
-    for variable in significativas.index:
-        logger.info(
-            f"{variable}: "
-            f"β={modelo.params[variable]:.4f} | "
-            f"p={modelo.pvalues[variable]:.4f}"
-        )
+    logger.info(
+        f"\nOLS\n"
+        f"Observaciones  : {int(modelo.nobs):,}\n"
+        f"R^2 ajustado   : {modelo.rsquared_adj:.4f}\n"
+        f"Covarianza     : Cluster por tienda\n"
+        f"Significativas : {len(significativas)}"
+    )
 
     return modelo
 
@@ -134,8 +130,12 @@ def train_decision_tree(X_train, y_train, fechas_train):
 
     grid.fit(X_train.to_pandas(), y_train.to_numpy())
 
-    logger.info(f"Mejores parámetros: {grid.best_params_}")
-    logger.info(f"MAE validación: {-grid.best_score_:,.2f}")
+    logger.info(
+        f"\nDecesion Tree\n"
+        f"MAE validacion: {-grid.best_score_:,.2f}\n"
+        f"Profundidad   : {grid.best_params_['max_depth']}\n"
+        f"Minimo hoja  : {grid.best_params_['min_samples_leaf']}"
+    )
 
     return grid.best_estimator_
 
@@ -183,8 +183,13 @@ def train_xgboost(X_train, y_train, fechas_train):
 
     grid.fit(X_train.to_pandas(), y_train.to_numpy())
 
-    logger.info(f"XGBoost - Mejores parámetros: {grid.best_params_}")
-    logger.info(f"XGBoost - MAE validación: {-grid.best_score_:,.2f}")
+    logger.info(
+        f"\nXGBOOST\n"
+        f"MAE validacion: {-grid.best_score_:,.2f}\n"
+        f"Estimadores  : {grid.best_params_['n_estimators']}\n"
+        f"Profundidad   : {grid.best_params_['max_depth']}\n"
+        f"Learning  : {grid.best_params_['learning_rate']:.2f}"
+    )
 
     return grid.best_estimator_
 
@@ -214,7 +219,14 @@ def train_neural_network(X_train, y_train):
 
     modelo.fit(X_train.to_pandas(), y_train.to_numpy())
 
-    logger.info("Red neuronal MLP entrenada")
+    red=modelo.named_steps["mlpregressor"]
+    logger.info(
+        f"\nNeural Network MLP\n"
+        f"Arquitectura : {red.hidden_layer_sizes}\n"
+        f"Iteraciones : {red.n_iter_}\n"
+        f"Loss final: {red.loss_:.4}\n"
+        f"R^2 validacion: {red.best_validation_score_:.4f}"
+    )
 
     return modelo
 
@@ -240,11 +252,13 @@ def train_hierarchical(df_train):
 
     icc = var_tienda / (var_tienda + var_residual)
 
-    logger.info("Modelo jerárquico")
-    logger.info(f"Varianza entre tiendas: {var_tienda:.4f}")
-    logger.info(f"Varianza residual: {var_residual:.4f}")
-    logger.info(f"ICC: {icc:.2%}")
-    logger.info(f"Convergencia: {modelo.converged}")
+    logger.info(
+        f"\nModelo Jerarquico\n"
+        f"Var. tiendas : {var_tienda:.4f}\n"
+        f"Var. residual: {var_residual:.4f}\n"
+        f"ICC          : {icc:.2%}\n"
+        f"Convergencia : {modelo.converged}\n"
+    )
 
     return modelo
 

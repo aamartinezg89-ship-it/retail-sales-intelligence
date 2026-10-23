@@ -1,0 +1,63 @@
+{
+    "Observaciones": 203958,
+    "variables": 13,
+    "duplicados": 0,
+    "nulos": {
+        "date": 0,
+        "store_id": 0,
+        "category": 0,
+        "total_transactions": 0,
+        "cash_transactions": 12123,
+        "card_transactions": 0,
+        "amount_total": 0,
+        "amount_cash": 12123,
+        "amount_card": 0,
+        "units_sold": 6118,
+        "avg_ticket": 4874,
+        "has_promotion": 0,
+        "replenishment_signal": 960
+    },
+    "runs_test": 1650,
+    "significativos": [
+        {
+            "store_id": "STR_065",
+            "category": "Hogar",
+            "variable": "units_sold",
+            "z_stat": -4.80319736056601,
+            "p_value": 1.5615183376953591e-06,
+            "p_adjusted": 0.0025765052571973426
+        },
+        {
+            "store_id": "STR_053",
+            "category": "Cuidado_Personal",
+            "variable": "units_sold",
+            "z_stat": -4.338987500187629,
+            "p_value": 1.4314066303657564e-05,
+            "p_adjusted": 0.01180910470051749
+        },
+        {
+            "store_id": "STR_048",
+            "category": "Electronica",
+            "variable": "avg_ticket",
+            "z_stat": -3.8204090038856777,
+            "p_value": 0.00013323055363512564,
+            "p_adjusted": 0.043966082699591465
+        },
+        {
+            "store_id": "STR_020",
+            "category": "Electronica",
+            "variable": "units_sold",
+            "z_stat": -3.9346470004567355,
+            "p_value": 8.331906167837094e-05,
+            "p_adjusted": 0.043966082699591465
+        },
+        {
+            "store_id": "STR_016",
+            "category": "Bebidas",
+            "variable": "units_sold",
+            "z_stat": -3.8204090038856777,
+            "p_value": 0.00013323055363512564,
+            "p_adjusted": 0.043966082699591465
+        }
+    ]
+}

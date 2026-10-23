@@ -1,8 +1,9 @@
 import polars as pl
 import logging
-from skimpy import skim
 from statsmodels.sandbox.stats.runs import runstest_1samp
 from statsmodels.stats.multitest import multipletests
+import json
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -48,33 +49,6 @@ def run_eda(df: pl.DataFrame):
     )
     logger.info(f"Agrupación temporal de valores nulos por mes y año:\n{df_null_time}")
 
-    # binario
-
-    df_binario =(
-        df.select("date", "store_id", "category",
-                  *[pl.col(c).is_not_null().cast(pl.Int8).alias(c)
-                   for c in ["cash_transactions","amount_cash","units_sold","avg_ticket","replenishment_signal"]]
-    ).with_columns(pl.col("date").str.strptime(pl.Date, format="%Y-%m-%d")
-    ).with_columns(pl.col("date").dt.year().alias("year"),
-                      pl.col("date").dt.month().alias("month"),
-                      pl.col("date").dt.week().alias("week"),
-                      pl.col("date").dt.weekday().alias("weekday"))
-     .with_columns(pl.sum_horizontal(
-            "cash_transactions","amount_cash","units_sold","avg_ticket","replenishment_signal").alias("total")
-    ).filter(pl.col("total") < 5)
-     .filter(pl.col("store_id") == "STR_055")
-     .group_by("year","month","week","weekday","category","total")
-     .agg(pl.len().alias("observaciones"))
-     .pivot(
-        on="category",
-        index=["year", "month", "week", "weekday", "total"],
-        values="observaciones",
-        aggregate_function="sum"
-      )
-     .sort("year","month","week", "weekday","weekday","total", descending=False)
-    )
-
-    logger.info(f"DataFrame binario de valores nulos:\n{df_binario}")
 
     # Pruba run
     """
@@ -136,15 +110,6 @@ def run_eda(df: pl.DataFrame):
         )
     )
 
-    print(
-        df_test.select(
-            pl.len().alias("pruebas"),
-            (pl.col("p_adjusted") < 0.05).sum().alias("significativas_ajustadas"),
-            (pl.col("p_adjusted") >= 0.05).sum().alias("no_significativas_ajustadas")
-        )
-    )
-
-    logger.info(f"Resultados de la prueba de aleatoriedad con corrección de p-valores:\n{df_test}")
 
     df_significativos = df_test.filter(pl.col("p_adjusted") < 0.05).sort("p_adjusted")
 
@@ -164,6 +129,20 @@ def run_eda(df: pl.DataFrame):
     logger.info(
         f"Significativas ajustadas:"
         f"{df_significativos.height}"
+    )
+
+    resultados = {
+        "Observaciones": df.height,
+        "variables": df.width,
+        "duplicados": int(df.is_duplicated().sum()),
+        "nulos":df.null_count().to_dicts()[0],
+        "runs_test": df_test.height,
+        "significativos": df_significativos.to_dicts()
+    }
+
+    Path("reports").mkdir(exist_ok=True)
+    Path("reports/eda_results.json").write_text(
+        json.dumps(resultados, indent=4, ensure_ascii=False)
     )
 
     logger.info("Análisis exploratorio de datos (EDA) finalizado")

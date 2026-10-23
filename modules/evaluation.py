@@ -7,6 +7,13 @@ import matplotlib.pyplot as plt
 from sklearn.tree import plot_tree
 from pathlib import Path
 
+def metricas(y, pred):
+    return {
+        "MAE": mean_absolute_error(y, pred),
+        "RMSE": np.sqrt(mean_squared_error(y, pred)),
+        "R2": r2_score(y, pred)
+    }
+
 logger = logging.getLogger(__name__)
 
 # 1) Evalucion MCO
@@ -15,23 +22,24 @@ Evalua la regresion MCO sobre datos de prueba.
 Transforma las predicciones logaritmicas a ventas originales.
 Calcula MAE, RMSE y R^2
 """
-def evaluate_ols(modelo, df_test):
+def evaluate_ols(modelo, df_train, df_test):
 
-    datos = df_test.to_pandas()
+    def calcular(df):
+        datos = df.to_pandas()
+        pred = np.exp(modelo.predict(datos))
+        return metricas(datos["amount_total"], pred)
 
-    y_real = datos["amount_total"]
-    y_pred = np.exp(modelo.predict(datos))
+    train = calcular(df_train)
+    test = calcular(df_test)
 
-    mae = mean_absolute_error(y_real, y_pred)
-    rmse = np.sqrt(mean_squared_error(y_real, y_pred))
-    r2 = r2_score(y_real, y_pred)
+    logger.info(
+        f"\nOLS | TRAIN vs TEST\n"
+        f"MAE  : {train['MAE']:,.2f} | {test['MAE']:,.2f}\n"
+        f"RMSE : {train['RMSE']:,.2f} | {test['RMSE']:,.2f}\n"
+        f"R²   : {train['R2']:.4f} | {test['R2']:.4f}"
+    )
 
-    logger.info("Evaluación OLS - datos de prueba")
-    logger.info(f"MAE: {mae:,.2f}")
-    logger.info(f"RMSE: {rmse:,.2f}")
-    logger.info(f"R² prueba: {r2:.4f}")
-
-    return mae, rmse, r2
+    return train, test
 
 # 2) Evalua modelo de ML
 """
@@ -39,20 +47,27 @@ Evalua modelos de ML sobre datos de prueba.
 Compara ventas observadas y predichas mediante MAE, RMSE y R^2 para medir su capacidad de generalizacion
 """
 
-def evaluate_model(modelo, X_test, y_test, nombre):
-    real = y_test.to_numpy()
-    pred = modelo.predict(X_test.to_pandas())
+def evaluate_model(modelo, X_train, y_train, X_test, y_test, nombre):
 
-    mae = mean_absolute_error(real, pred)
-    rmse = np.sqrt(mean_squared_error(real, pred))
-    r2 = r2_score(real, pred)
+    train = metricas(
+        y_train.to_numpy(),
+        modelo.predict(X_train.to_pandas())
+    )
 
-    logger.info(f"Evaluación {nombre} - Prueba 2024")
-    logger.info(f"MAE: {mae:,.2f}")
-    logger.info(f"RMSE: {rmse:,.2f}")
-    logger.info(f"R²: {r2:.4f}")
+    test = metricas(
+        y_test.to_numpy(),
+        modelo.predict(X_test.to_pandas())
+    )
 
-    return mae, rmse, r2
+    logger.info(
+        f"\n{nombre} | TRAIN vs TEST\n"
+        f"MAE  : {train['MAE']:,.2f} | {test['MAE']:,.2f}\n"
+        f"RMSE : {train['RMSE']:,.2f} | {test['RMSE']:,.2f}\n"
+        f"R²   : {train['R2']:.4f} | {test['R2']:.4f}"
+    )
+
+
+    return train, test
 
 # 3) Importancia de variables
 """
@@ -105,8 +120,6 @@ def diagnostic_model(modelo, X_test, df_test, nombre):
             .sort("MAE", descending=True)
         )
 
-        logger.info(f"{nombre} - MAE por {variable}")
-        logger.info(f"\n{tabla}")
 
     return resultado
 
@@ -150,10 +163,6 @@ def grouped_importance(modelo, X_test, y_test, nombre):
 
     resultados.sort(key=lambda x: x[1], reverse=True)
 
-    logger.info(f"Importancia agrupada - {nombre}")
-
-    for grupo, aumento in resultados:
-        logger.info(f"{grupo}: +{aumento:,.2f} MAE")
 
     return resultados
 

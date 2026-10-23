@@ -1,137 +1,134 @@
 import logging
+import numpy as np
 import polars as pl
-from modules.dependecies import check_depencies
-from config import DATA_DIR
 from datetime import date
+
+from modules.dependecies import check_depencies
+from modules.data_loader import load_data
+from modules.eda import run_eda
+from config import DATA_DIR
+
+from modules.preprocessing import (
+    preprocess_data, validate_imputation, merge_data, participacion_ventas, transform_data)
+
+from modules.modeling import (
+    train_ols, prepare_features, split_data, train_decision_tree, train_xgboost, train_neural_network, train_hierarchical)
+
+from modules.evaluation import (
+    metricas, evaluate_ols, evaluate_model, feature_importance, diagnostic_model, grouped_importance, export_tree)
+
+from modules.mlflow_tracking import registrar_modelo
+
+from modules.evaluation_2 import diagnosticar
+from modules.results import guardar_json
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 def main():
-    # 1) verificar dependencias
+    # 1) carga
     check_depencies()
-
-    # 2) cargar datasets
-    from modules.data_loader import load_data
     datasets = load_data()
 
-    #3) confirmar que los datasets se cargaron correctamente
-    for nombre, df in datasets.items():
-        print(nombre, df.shape)
-
-    # eda
-    from modules.eda import run_eda
     df = pl.from_pandas(datasets["transactions"])
-
-    run_eda(df)
-
-    # preproceso
-
-    from modules.preprocessing import preprocess_data, validate_imputation, merge_data, participacion_ventas, transform_data
-
-    df_imputado = preprocess_data(df)
-    resumen = validate_imputation(df, df_imputado)
-
-    # integracion
-
     df_tiendas = pl.from_pandas(datasets["stores"])
     df_calendario = pl.from_pandas(datasets["calendar"])
 
-    df_panel = merge_data(df_imputado, df_tiendas, df_calendario)
-    resultados = participacion_ventas(df_panel)
+    # 2) eda
+    run_eda(df)
 
-    # modelo
+    # 3) preproceso
+    df_imputado = preprocess_data(df)
+    validate_imputation(df, df_imputado)
+
+    df_panel = merge_data(df_imputado, df_tiendas, df_calendario)
+
+    participacion_ventas(df_panel)
     df_model = transform_data(df_panel)
 
-    from modules.modeling import prepare_features, split_data, train_decision_tree, train_xgboost, train_hierarchical
-
+    # 4) tiempo
     X, y = prepare_features(df_model)
     X_train, X_test, y_train, y_test = split_data(df_panel, X, y)
 
-    print(X.select(pl.col(pl.String)).columns)
+    corte = date(2023, 12, 1)
 
+    df_train = df_panel.filter(pl.col("date") < corte)
+    df_test = df_panel.filter(pl.col("date") >= corte)
 
-    from modules.modeling import train_ols
+    fechas_train = df_model.filter(pl.col("date") < corte)["date"]
 
-    df_train = df_panel.filter(
-        pl.col("date") < date(2024, 1, 1)
-    )
-
+    # 5) entrenamiento
     modelo_ols = train_ols(df_train)
-
-
-    from modules.evaluation import evaluate_ols, evaluate_model, feature_importance, diagnostic_model, grouped_importance, export_tree
-
-    df_test = df_panel.filter(
-        pl.col("date") >= date(2024, 1, 1)
-    )
-
-    mae, rmse, r2 = evaluate_ols(modelo_ols, df_test)
-
-    fechas_train = df_model.filter(
-        pl.col("date") < date(2024, 1, 1)
-    )["date"]
-
-    modelo_tree = train_decision_tree(
-        X_train, y_train, fechas_train
-    )
-
-    export_tree(modelo_tree, X_train)
-
-    mae_tree, rmse_tree, r2_tree = evaluate_model(
-        modelo_tree, X_test, y_test, "Decision Tree"
-    )
-
-    modelo_xgb = train_xgboost(
-        X_train, y_train, fechas_train
-    )
-
-    mae_xgb, rmse_xgb, r2_xgb = evaluate_model(
-        modelo_xgb, X_test, y_test, "XGBoost"
-    )
-
-    feature_importance(modelo_tree, X_train, "Decision Tree")
-    feature_importance(modelo_xgb, X_train, "XGBoost")
-
-    from modules.modeling import train_neural_network
-
+    modelo_tree = train_decision_tree(X_train, y_train, fechas_train)
+    modelo_xgb = train_xgboost(X_train, y_train, fechas_train)
     modelo_mlp = train_neural_network(X_train, y_train)
-
-    mae_mlp, rmse_mlp, r2_mlp = evaluate_model(
-        modelo_mlp, X_test, y_test, "Neural Network MLP"
-    )
-
-    df_test = df_panel.filter(
-        pl.col("date") >= date(2024, 1, 1)
-    )
-
-    diagnostic_model(modelo_tree, X_test, df_test, "Decision Tree")
-
-    diagnostic_model(modelo_xgb, X_test, df_test, "XGBoost")
-
-    diagnostic_model(modelo_mlp, X_test, df_test, "MLP")
-
-    df_train = df_panel.filter(
-        pl.col("date") < date(2024, 1, 1)
-    )
-
     modelo_hierarchical = train_hierarchical(df_train)
 
-    grouped_importance(modelo_tree, X_test, y_test, "Decision Tree")
+    # 6) evaluacion train/test
+    ols_train, ols_test = evaluate_ols(modelo_ols, df_train, df_test)
 
-    grouped_importance(modelo_xgb, X_test, y_test, "XGBoost")
+    modelos_ml = {
+        "Decision Tree": modelo_tree,
+        "XGBoost": modelo_xgb,
+        "MLP": modelo_mlp
+    }
 
-    grouped_importance(modelo_mlp, X_test, y_test, "MLP")
+    evaluaciones = {}
 
-    from modules.mlflow_tracking import registrar_modelo
+    for nombre, modelo in modelos_ml.items():
+        train, test = evaluate_model(modelo, X_train, y_train, X_test, y_test, nombre)
+
+        evaluaciones[nombre] = {"train": train, "test": test}
+
+    guardar_json("model_results", {
+        "OLS": {"train": ols_train, "test": ols_test},
+        "modelos_ml": evaluaciones
+    })
+
+    # 7) diagnostico comercial
+    diagnosticos = {}
+
+    for nombre, modelo in modelos_ml.items():
+        diagnosticos[nombre] = diagnosticar(
+            y_train.to_numpy(),
+            modelo.predict(X_train.to_pandas()),
+            y_test.to_numpy(),
+            modelo.predict(X_test.to_pandas())
+        )
+
+    diagnosticos["OLS"] = diagnosticar(
+        df_train["amount_total"].to_numpy(),
+        np.exp(modelo_ols.predict(df_train.to_pandas())),
+        df_test["amount_total"].to_numpy(),
+        np.exp(modelo_ols.predict(df_test.to_pandas()))
+    )
+
+    guardar_json("diagnostics", diagnosticos)
+
+    print("\n========== SESGO Y DERIVA ==========")
+    print(f"{'Modelo':<16} {'PBIAS Test':>12} {'KS Error':>12} {'p-value':>12}")
+
+    for nombre, r in diagnosticos.items():
+        print(
+            f"{nombre:<16} "
+            f"{r['test']['pbias_pct']:>11.2f}% "
+            f"{r['deriva_errores']['ks']:>12.4f} "
+            f"{r['deriva_errores']['p_value']:>12.4g}"
+        )
+
+    print("Resultados: reports/diagnostics.json")
+
+    # mlflow
+    for nombre, modelo in modelos_ml.items():
+        registrar_modelo(
+            nombre,
+            modelo.get_params(),
+            evaluaciones[nombre]["test"]
+        )
 
     registrar_modelo(
-        "Decision Tree",
-        modelo_tree.get_params(),
-        {
-            "MAE": mae_tree,
-            "RMSE": rmse_tree,
-            "R2": r2_tree
-        }
+        "OLS",
+        {"modelo": "OLS", "covarianza": "cluster"},
+        ols_test
     )
 if __name__ == "__main__":
     main()
