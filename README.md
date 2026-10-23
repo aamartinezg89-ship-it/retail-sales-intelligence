@@ -1,6 +1,4 @@
-# Inteligencia de ventas
-
-**End-to-End Data Science | Econometría | Machine Learning | Modelos jerárquicos | MLOps**
+# Inteligencia de ventas | Resumen General
 
 ## Descripción
 
