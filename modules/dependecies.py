@@ -7,7 +7,7 @@ def check_depencies():
     archivo = Path(__file__).resolve().parents[1] / "requirements.txt"
     try:
         subprocess.run(
-            [sys.executable, "-m", "pip", "install", "q" ,"-r", str(archivo)],
+            [sys.executable, "-m", "pip", "install", "-q" ,"-r", str(archivo)],
             check=True,
             capture_output=True
         )

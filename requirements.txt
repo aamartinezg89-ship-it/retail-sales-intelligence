@@ -4,6 +4,7 @@ numpy
 polars
 pyarrow
 skimpy
+mlflow==3.17.2
 
 # Statistics
 scipy
